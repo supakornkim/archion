@@ -5,11 +5,13 @@
   import KPIStripe from '~/components/sections/KPIStripe.vue'
   import Testimonials from '~/components/sections/Testimonials.vue'
   import CTA from '~/components/sections/CTA.vue'
+  import HeroChat from '~/components/sections/HeroChat.vue'
 </script>
 
 <template>
   <div>
     <Hero />
+    <HeroChat />
     <Logos />
     <Features />
     <KPIStripe />
