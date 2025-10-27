@@ -13,12 +13,12 @@
     checkpoints: { id: string; title: string; due: string; done?: boolean }[]
   }
 
-  const input = ref('')
   const goal = ref('')
+  const input = ref('')
+  const commitTitle = ref('')
   const session = ref<Session | null>(null)
   const loading = ref(false)
   const nextSteps = ref<string[]>([])
-  const commitTitle = ref('')
 
   async function startFlow() {
     if (!goal.value.trim()) return
@@ -26,7 +26,7 @@
     try {
       const res = await $fetch<{ session: Session }>('/api/creative/start', {
         method: 'POST',
-        body: { goal: goal.value, locale: 'th' },
+        body: { goal: goal.value, locale: 'en' },
       })
       session.value = res.session
     } finally {
@@ -77,7 +77,6 @@
         method: 'POST',
         body: { sessionId: session.value.id },
       })
-      // reuse existing /plan renderer by navigating with serialized params, or show inline
       const blob = encodeURIComponent(JSON.stringify(plan))
       navigateTo(`/plan?from=creative&data=${blob}`)
     } finally {
@@ -90,20 +89,22 @@
   <section class="max-w-4xl mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold mb-4">Creative Flow</h1>
 
+    <!-- === Start form === -->
     <div v-if="!session" class="space-y-4">
       <input
         v-model="goal"
         class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3"
-        placeholder="บอกเป้าหมาย เช่น: เปิดร้านข้าวกล่อง / Start an online rice shop"
+        placeholder="Tell Archion what you want to achieve..."
       />
       <button
         @click="startFlow"
         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-5 py-2"
       >
-        {{ loading ? 'Starting…' : 'Start' }}
+        {{ loading ? 'Starting…' : 'Start Flow' }}
       </button>
     </div>
 
+    <!-- === Conversation === -->
     <div v-else class="space-y-6">
       <div class="bg-white/5 border border-white/10 rounded-xl p-4">
         <p class="text-sm text-gray-400">Goal</p>
@@ -113,6 +114,7 @@
         </p>
       </div>
 
+      <!-- Chat bubbles -->
       <div class="space-y-2">
         <div
           v-for="t in session.turns"
@@ -130,6 +132,7 @@
         </div>
       </div>
 
+      <!-- Next suggested steps -->
       <div v-if="nextSteps.length" class="bg-white/5 border border-white/10 rounded-xl p-4">
         <p class="text-sm text-gray-400 mb-2">Suggested next steps</p>
         <ul class="list-disc list-inside text-gray-200">
@@ -137,11 +140,12 @@
         </ul>
       </div>
 
+      <!-- User reply input -->
       <div class="flex gap-2">
         <input
           v-model="input"
           class="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3"
-          placeholder="ตอบกลับเพื่อร่วมสร้างแผน…"
+          placeholder="Type your reply to continue building your plan…"
           @keyup.enter="sendTurn"
         />
         <button
@@ -152,13 +156,14 @@
         </button>
       </div>
 
+      <!-- Commit checkpoint -->
       <div class="bg-white/5 border border-white/10 rounded-xl p-4">
-        <p class="text-sm text-gray-400 mb-2">Commit a checkpoint (turn talk → action)</p>
+        <p class="text-sm text-gray-400 mb-2">Commit a checkpoint (turn conversation → action)</p>
         <div class="flex gap-2">
           <input
             v-model="commitTitle"
             class="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3"
-            placeholder="เช่น: โทรหา supplier 2 เจ้า ภายใน 3 วัน"
+            placeholder="e.g., Call 2 suppliers within 3 days"
           />
           <button @click="commitCheckpoint" class="border border-white/20 px-4 py-2 rounded-lg">
             Commit
